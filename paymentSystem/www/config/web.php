@@ -15,13 +15,6 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
-        'requestGeneratorService' => [
-            'class' => RequestGeneratorComponent::class,
-        ],
-        'digitalEncrypt' => [
-            'class' => DigitalEncrypt::class,
-            'publicKeyPath' => 'data/public.pem'
-        ],
         'request' => [
             'cookieValidationKey' => 'f2qtOA-2B26J3a1ihVUhdUpyl1kvL0SG',
         ],

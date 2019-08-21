@@ -51,8 +51,7 @@ class SiteController extends Controller {
      * @return string
      */
     public function actionIndex() {
-        $json = json_encode(Yii::$app->requestGeneratorService->generate());
-        return Yii::$app->digitalEncrypt->encrypt($json);
+
     }
 
     /**

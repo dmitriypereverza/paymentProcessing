@@ -1,5 +1,8 @@
 <?php
 
+use app\components\DigitalEncrypt;
+use app\components\RequestGeneratorComponent;
+
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
@@ -14,6 +17,13 @@ $config = [
         '@tests' => '@app/tests',
     ],
     'components' => [
+        'requestGeneratorService' => [
+            'class' => RequestGeneratorComponent::class,
+        ],
+        'digitalEncrypt' => [
+            'class' => DigitalEncrypt::class,
+            'publicKeyPath' => 'data/public.pem'
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
