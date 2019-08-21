@@ -1,5 +1,8 @@
 <?php
 
+use app\components\DigitalEncrypt;
+use app\components\RequestGeneratorComponent;
+
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
 
@@ -12,8 +15,14 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'requestGeneratorService' => [
+            'class' => RequestGeneratorComponent::class,
+        ],
+        'digitalEncrypt' => [
+            'class' => DigitalEncrypt::class,
+            'publicKeyPath' => 'data/public.pem'
+        ],
         'request' => [
-            // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'f2qtOA-2B26J3a1ihVUhdUpyl1kvL0SG',
         ],
         'cache' => [
@@ -28,9 +37,6 @@ $config = [
         ],
         'mailer' => [
             'class' => 'yii\swiftmailer\Mailer',
-            // send all mails to a file by default. You have to set
-            // 'useFileTransport' to false and configure a transport
-            // for the mailer to send real emails.
             'useFileTransport' => true,
         ],
         'log' => [
