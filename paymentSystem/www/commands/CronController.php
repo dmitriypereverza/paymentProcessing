@@ -2,16 +2,72 @@
 
 namespace app\commands;
 
+use app\components\DigitalEncrypt;
+use app\components\RequestManager;
+use app\models\Queue;
 use Yii;
 use yii\console\Controller;
 use yii\console\ExitCode;
 
 class CronController extends Controller {
 
-    public function actionIndex() {
-        $json = json_encode(Yii::$app->requestGeneratorService->generate());
-        echo Yii::$app->digitalEncrypt->encrypt($json);
+    public function actionGenerateRequests() {
+
+        $randomRequestCount = random_int(1, 10);
+        for ($i = 0; $i <= $randomRequestCount; $i++) {
+            $queueElement = new Queue();
+            $queueElement->content = json_encode(Yii::$app->requestGeneratorService->generate());
+            $queueElement->save();
+        }
 
         return ExitCode::OK;
+    }
+
+    public function actionEncryptAndSendRequests() {
+        /** @var Queue[] $queueItems */
+        $queueItems = Queue::find()
+            ->where(['success' => null ])
+            ->andWhere([ 'inProgress' => false ])
+            ->limit(20)
+            ->all();
+        Queue::setParamsInAll($queueItems, [ 'inProgress' => true ]);
+
+        if (!$queueItems) {
+            return;
+        }
+        $requestContent = [];
+        foreach ($queueItems as $queueItem) {
+            $requestContent[] = $this->getDigitalEncrypt()->encrypt($queueItem->content);
+        }
+        $requestContent = json_encode($requestContent);
+
+
+        $response = $this->getRequestManager()->post('request', [
+            'payload' => $requestContent
+        ]);
+        if ($errorResponse = $this->getRequestManager()->getLastErrorResponse()) {
+            Yii::error($errorResponse->getReasonPhrase());
+        }
+
+        if (!$response['success']) {
+            echo 'Ошибка при запросе в эмулятор приема платежа';
+
+            Queue::setParamsInAll($queueItems, [ 'success' => false, 'inProgress' => false ]);
+            return;
+        }
+        Queue::setParamsInAll($queueItems, [ 'success' => true, 'inProgress' => false ]);
+    }
+
+    /**
+     * @return DigitalEncrypt
+     */
+    private function getDigitalEncrypt(): DigitalEncrypt {
+        return Yii::$app->digitalEncrypt;
+    }
+    /**
+     * @return RequestManager
+     */
+    private function getRequestManager(): RequestManager {
+        return Yii::$app->requestManager;
     }
 }

@@ -2,6 +2,7 @@
 
 use app\components\DigitalEncrypt;
 use app\components\RequestGeneratorComponent;
+use app\components\RequestManager;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
@@ -23,6 +24,10 @@ $config = [
         'digitalEncrypt' => [
             'class' => DigitalEncrypt::class,
             'publicKeyPath' => 'data/public.pem'
+        ],
+        'requestManager' => [
+            'class' => RequestManager::class,
+            'baseUrl' => 'http://google.com'
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
