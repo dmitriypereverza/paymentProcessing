@@ -1,7 +1,5 @@
 <?php
 
-use app\components\DigitalEncrypt;
-use app\components\RequestGeneratorComponent;
 use app\components\RequestManager;
 
 $params = require __DIR__ . '/params.php';
@@ -18,16 +16,9 @@ $config = [
         '@tests' => '@app/tests',
     ],
     'components' => [
-        'requestGeneratorService' => [
-            'class' => RequestGeneratorComponent::class,
-        ],
-        'encryptor' => [
-            'class' => DigitalEncrypt::class,
-            'publicKeyPath' => 'data/public.pem'
-        ],
         'requestManager' => [
             'class' => RequestManager::class,
-            'baseUrl' => 'http://payment_reciver_web'
+            'baseUrl' => 'http://google.com'
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',

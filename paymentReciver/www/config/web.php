@@ -1,7 +1,6 @@
 <?php
 
 use app\components\DigitalDecrypt;
-use app\components\RequestGeneratorComponent;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
@@ -15,8 +14,13 @@ $config = [
         '@npm'   => '@vendor/npm-asset',
     ],
     'components' => [
+        'decryptor' => [
+            'class' => DigitalDecrypt::class,
+            'privateKeyPath' => 'data/key.pem'
+        ],
         'request' => [
             'cookieValidationKey' => 'f2qtOA-2B26J3a1ihVUhdUpyl1kvL0SG',
+            'enableCsrfValidation' => false,
         ],
         'cache' => [
             'class' => 'yii\caching\FileCache',

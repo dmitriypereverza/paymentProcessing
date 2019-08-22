@@ -62,12 +62,10 @@ class RequestManager extends Component {
         /** @noinspection PhpUnhandledExceptionInspection */
         return $this->client->request(
             $type,
-            $this->baseUrl,
+            $this->baseUrl . '/' . $url,
             array_merge($requestParam, [
                 'http_errors' => false,
-                'query' => array_merge([
-                    'r' => $url
-                ], $queryParams)
+                'query' => $queryParams
             ],
                 $formParams ? ['form_params' => $formParams] : []
             )

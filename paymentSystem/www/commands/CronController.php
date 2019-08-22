@@ -2,6 +2,7 @@
 
 namespace app\commands;
 
+use app\components\DigitalDecrypt;
 use app\components\DigitalEncrypt;
 use app\components\RequestManager;
 use app\models\Queue;
@@ -19,7 +20,6 @@ class CronController extends Controller {
             $queueElement->content = json_encode(Yii::$app->requestGeneratorService->generate());
             $queueElement->save();
         }
-
         return ExitCode::OK;
     }
 
@@ -28,22 +28,21 @@ class CronController extends Controller {
         $queueItems = Queue::find()
             ->where(['success' => null ])
             ->andWhere([ 'inProgress' => false ])
-            ->limit(20)
+            ->limit(10)
             ->all();
         Queue::setParamsInAll($queueItems, [ 'inProgress' => true ]);
 
         if (!$queueItems) {
             return;
         }
-        $requestContent = [];
+        $content = [];
         foreach ($queueItems as $queueItem) {
-            $requestContent[] = $this->getDigitalEncrypt()->encrypt($queueItem->content);
+            $content[] = $this->getDigitalEncrypt()->encrypt($queueItem->content);
         }
-        $requestContent = json_encode($requestContent);
+        $content = json_encode($content);
 
-
-        $response = $this->getRequestManager()->post('request', [
-            'payload' => $requestContent
+        $response = $this->getRequestManager()->post('site/request', [
+            'payload' => $content
         ]);
         if ($errorResponse = $this->getRequestManager()->getLastErrorResponse()) {
             Yii::error($errorResponse->getReasonPhrase());
@@ -62,7 +61,7 @@ class CronController extends Controller {
      * @return DigitalEncrypt
      */
     private function getDigitalEncrypt(): DigitalEncrypt {
-        return Yii::$app->digitalEncrypt;
+        return Yii::$app->encryptor;
     }
     /**
      * @return RequestManager
