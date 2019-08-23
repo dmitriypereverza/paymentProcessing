@@ -8,6 +8,7 @@ class m190821_171220_create_queue_table extends Migration {
         $this->createTable('queue', [
             'id' => $this->primaryKey(),
             'content' => $this->string()->notNull(),
+            'error' => $this->string(),
             'success' => $this->boolean()->defaultValue(null),
             'inProgress' => $this->boolean()->defaultValue(false),
         ]);

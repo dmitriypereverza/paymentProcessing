@@ -42,18 +42,20 @@ class CronController extends Controller {
             return;
         }
 
-        $content = $this->getPipeService()
-            ->foreach($queueItems)
-            ->addPipe(function ($queueItem) {
-                return $this->getDigitalEncrypt()->encrypt($queueItem->content);
-            })
-            ->addPipe(function ($data) {
-                return json_encode($data);
-            })
-            ->exec();
+        $content = [];
+        foreach ($queueItems as $queueItem) {
+            try {
+                $content[] = $this->getDigitalEncrypt()->encrypt($queueItem->content);
+            } catch (\Exception $e) {
+                $queueItem->success = false;
+                $queueItem->error = $e->getMessage();
+                $queueItem->inProgress = false;
+                $queueItem->save();
+            }
+        }
 
         $response = $this->getRequestManager()->post('site/request', [
-            'payload' => $content
+            'payload' => json_encode($content)
         ]);
         if ($errorResponse = $this->getRequestManager()->getLastErrorResponse()) {
             Yii::error($errorResponse->getReasonPhrase());

@@ -7,6 +7,7 @@ use yii\db\ActiveRecord;
 /**
  * Class Queue
  *
+ * @property string $error
  * @property string $content
  * @property boolean $success
  * @property boolean $inProgress
