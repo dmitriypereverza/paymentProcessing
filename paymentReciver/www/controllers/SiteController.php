@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use app\components\DigitalDecrypt;
+use app\components\Pipe;
 use app\models\Queue;
 use Yii;
 use yii\filters\VerbFilter;
@@ -33,20 +34,33 @@ class SiteController extends Controller {
         $data = Yii::$app->request->post('payload');
         $data = json_decode($data, true);
 
-        foreach ($data as $item) {
-            $decryptedText = $this->getDigitalDecrypt()->decrypt($item);
-            $queueElement = new Queue();
-            $queueElement->content = $decryptedText;
-            $queueElement->save();
+        try {
+            $this->getPipe()->foreach($data)
+                ->addPipe([$this->getDigitalDecrypt(), 'decrypt'])
+                ->addPipe(function ($data) {
+                    Queue::create($data);
+                })
+                ->exec();
+        } catch (\Exception $e) {
+            return json_encode([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'payload' => null,
+            ]);
         }
 
         return json_encode([
             'success' => true,
-            'payload' => 'dfdfsdsdf',
+            'error' => null,
+            'payload' => null,
         ]);
     }
 
     private function getDigitalDecrypt(): DigitalDecrypt {
         return Yii::$app->decryptor;
+    }
+
+    private function getPipe(): Pipe {
+        return Yii::$app->pipe;
     }
 }

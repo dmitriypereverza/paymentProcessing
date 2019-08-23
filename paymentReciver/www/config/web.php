@@ -1,6 +1,7 @@
 <?php
 
 use app\components\DigitalDecrypt;
+use app\components\PaymentService;
 
 $params = require __DIR__ . '/params.php';
 $db = require __DIR__ . '/db.php';
@@ -17,6 +18,12 @@ $config = [
         'decryptor' => [
             'class' => DigitalDecrypt::class,
             'privateKeyPath' => 'data/key.pem'
+        ],
+        'paymentService' => [
+            'class' => PaymentService::class
+        ],
+        'pipe' => [
+            'class' => \app\components\Pipe::class,
         ],
         'request' => [
             'cookieValidationKey' => 'f2qtOA-2B26J3a1ihVUhdUpyl1kvL0SG',

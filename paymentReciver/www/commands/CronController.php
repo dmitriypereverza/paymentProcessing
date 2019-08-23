@@ -4,6 +4,7 @@ namespace app\commands;
 
 use app\components\DigitalDecrypt;
 use app\components\DigitalEncrypt;
+use app\components\PaymentService;
 use app\components\RequestManager;
 use app\models\Queue;
 use app\models\Transaction;
@@ -31,29 +32,33 @@ class CronController extends Controller {
             $queueItem->inProgress = false;
             $queueItem->success = false;
             $queueItem->save();
-            Yii::error('Не удалось распарсить данные из очереди');
+            $str = 'Не удалось распарсить данные из очереди';
+            Yii::error($str);
+            echo $str;
+            return;
         }
 
-        $transaction = new Transaction();
-        $transaction->id = $data['id'];
-        $transaction->user_id = $data['order_number'];
-        $transaction->sum = $data['sum'] - ((float)$data['sum'] * (float)$data['commision'] / 100);
-        $transaction->save();
-
-        $userWallet = UserWallet::find()
-            ->where(['user_id' => $transaction->user_id ])
-            ->one();
-
-        if (!$userWallet) {
-            $userWallet = new UserWallet();
-            $userWallet->user_id = $transaction->user_id;
+        try {
+            $this->getPaymentService()->handle($data);
+        } catch (\Exception $e) {
+            $queueItem->inProgress = false;
+            $queueItem->success = false;
+            $queueItem->save();
+            $str = 'Ошибка при регистрации платежа: ' . $e->getMessage();
+            Yii::error($str);
+            echo $str;
+            return;
         }
-
-        $userWallet->sum += $transaction->sum;
-        $userWallet->save();
 
         $queueItem->inProgress = false;
         $queueItem->success = true;
         $queueItem->save();
+    }
+
+    /**
+     * @return PaymentService
+     */
+    private function getPaymentService(): PaymentService {
+        return Yii::$app->paymentService;
     }
 }

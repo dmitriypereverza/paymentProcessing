@@ -14,7 +14,11 @@ use yii\db\ActiveRecord;
  * @package app\models
  */
 class Queue extends ActiveRecord {
-
+    public static function create (string $data) {
+        $queueElement = new Queue();
+        $queueElement->content = $data;
+        return $queueElement->save();
+    }
 
     /**
      * @param Queue[] $queueItems

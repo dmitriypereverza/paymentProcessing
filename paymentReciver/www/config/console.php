@@ -16,10 +16,6 @@ $config = [
         '@tests' => '@app/tests',
     ],
     'components' => [
-        'requestManager' => [
-            'class' => RequestManager::class,
-            'baseUrl' => 'http://google.com'
-        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
