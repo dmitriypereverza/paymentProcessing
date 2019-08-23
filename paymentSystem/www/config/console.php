@@ -21,6 +21,9 @@ $config = [
         'requestGeneratorService' => [
             'class' => RequestGeneratorComponent::class,
         ],
+        'pipe' => [
+            'class' => \app\components\Pipe::class,
+        ],
         'encryptor' => [
             'class' => DigitalEncrypt::class,
             'publicKeyPath' => 'data/public.pem'

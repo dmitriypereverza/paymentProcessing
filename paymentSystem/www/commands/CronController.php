@@ -2,8 +2,9 @@
 
 namespace app\commands;
 
-use app\components\DigitalDecrypt;
 use app\components\DigitalEncrypt;
+use app\components\Pipe;
+use app\components\RequestGeneratorComponent;
 use app\components\RequestManager;
 use app\models\Queue;
 use Yii;
@@ -12,13 +13,18 @@ use yii\console\ExitCode;
 
 class CronController extends Controller {
 
-    public function actionGenerateRequests() {
-
-        $randomRequestCount = random_int(1, 10);
+    public function actionGenerateRequests($count = 10) {
+        if ($count < 1) {
+            return ExitCode::OK;
+        }
+        $randomRequestCount = random_int(1, $count);
         for ($i = 0; $i <= $randomRequestCount; $i++) {
-            $queueElement = new Queue();
-            $queueElement->content = json_encode(Yii::$app->requestGeneratorService->generate());
-            $queueElement->save();
+            $data = $this->getPipeService()->create()
+                ->addPipe([$this->getRequestGeneratorService(), 'generate'])
+                ->addPipe(function ($data) { return json_encode($data); })
+                ->exec();
+
+            Queue::create($data);
         }
         return ExitCode::OK;
     }
@@ -35,22 +41,27 @@ class CronController extends Controller {
         if (!$queueItems) {
             return;
         }
-        $content = [];
-        foreach ($queueItems as $queueItem) {
-            $content[] = $this->getDigitalEncrypt()->encrypt($queueItem->content);
-        }
-        $content = json_encode($content);
+
+        $content = $this->getPipeService()
+            ->foreach($queueItems)
+            ->addPipe(function ($queueItem) {
+                return $this->getDigitalEncrypt()->encrypt($queueItem->content);
+            })
+            ->addPipe(function ($data) {
+                return json_encode($data);
+            })
+            ->exec();
 
         $response = $this->getRequestManager()->post('site/request', [
             'payload' => $content
         ]);
         if ($errorResponse = $this->getRequestManager()->getLastErrorResponse()) {
             Yii::error($errorResponse->getReasonPhrase());
+            return;
         }
 
         if (!$response['success']) {
             echo 'Ошибка при запросе в эмулятор приема платежа';
-
             Queue::setParamsInAll($queueItems, [ 'success' => false, 'inProgress' => false ]);
             return;
         }
@@ -68,5 +79,19 @@ class CronController extends Controller {
      */
     private function getRequestManager(): RequestManager {
         return Yii::$app->requestManager;
+    }
+
+    /**
+     * @return RequestGeneratorComponent
+     */
+    private function getRequestGeneratorService(): RequestGeneratorComponent {
+        return Yii::$app->requestGeneratorService;
+    }
+
+    /**
+     * @return Pipe
+     */
+    private function getPipeService(): Pipe {
+        return Yii::$app->pipe;
     }
 }
