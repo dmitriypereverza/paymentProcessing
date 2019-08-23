@@ -22,9 +22,8 @@ class CronController extends Controller {
             $data = $this->getPipeService()->create()
                 ->addPipe([$this->getRequestGeneratorService(), 'generate'])
                 ->addPipe(function ($data) { return json_encode($data); })
+                ->addPipe(function ($data) { Queue::create($data); })
                 ->exec();
-
-            Queue::create($data);
         }
         return ExitCode::OK;
     }
