@@ -1,4 +1,7 @@
-db
 .idea
+db
+payment_reciver_db
 paymentSystem/www/data
+!paymentSystem/www/data/.gitkeep
 paymentReciver/www/data
+!paymentReciver/www/data/.gitkeep
