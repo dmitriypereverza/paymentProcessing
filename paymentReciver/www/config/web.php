@@ -19,9 +19,6 @@ $config = [
             'class' => DigitalDecrypt::class,
             'privateKeyPath' => 'data/key.pem'
         ],
-        'paymentService' => [
-            'class' => PaymentService::class
-        ],
         'pipe' => [
             'class' => \app\components\Pipe::class,
         ],

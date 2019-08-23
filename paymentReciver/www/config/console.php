@@ -1,5 +1,6 @@
 <?php
 
+use app\components\PaymentService;
 use app\components\RequestManager;
 
 $params = require __DIR__ . '/params.php';
@@ -16,6 +17,9 @@ $config = [
         '@tests' => '@app/tests',
     ],
     'components' => [
+        'paymentService' => [
+            'class' => PaymentService::class
+        ],
         'cache' => [
             'class' => 'yii\caching\FileCache',
         ],
